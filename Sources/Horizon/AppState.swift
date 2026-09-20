@@ -19,6 +19,10 @@ final class AppState: ObservableObject {
     @Published var lastUpdated: Date?
     @Published var usingProduction = false
 
+    /// Whether the owner has proved who they are during this visit. Reset
+    /// every time the popover closes, so walking away relocks it.
+    @Published var unlocked = false
+
     /// Exactly what the bank last reported, before the app's corrections.
     private var rawBalance: Balance?
 
@@ -157,6 +161,17 @@ final class AppState: ObservableObject {
             .reduce(0) { $0 + $1.amount }
         out.facilityInBalance = settings.facilityToStrip
         return out
+    }
+
+    /// Shut the app again. Called when the popover closes, and when locking
+    /// is switched on so it takes effect without waiting for the next visit.
+    func lock() {
+        unlocked = false
+    }
+
+    /// Whether the popover should be showing the lock screen right now.
+    var isLocked: Bool {
+        settings.requireUnlock && !unlocked
     }
 
     /// Reapply the settings to the balance the bank last gave us, without

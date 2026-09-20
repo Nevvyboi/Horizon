@@ -8,15 +8,6 @@ struct Credentials: Codable, Equatable {
     var secret: String
     var apiKey: String
     var production: Bool
-
-    /// The shared sandbox keys Investec publishes in their developer docs.
-    /// Safe to ship: they point at the public test account, not anyone's money.
-    static let sandbox = Credentials(
-        clientId: "REDACTED",
-        secret: "REDACTED",
-        apiKey: "REDACTED",
-        production: false
-    )
 }
 
 enum Keychain {

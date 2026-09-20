@@ -12,6 +12,8 @@ struct RootView: View {
         Group {
             if !state.connected {
                 OnboardingView()
+            } else if state.isLocked {
+                LockView(accent: state.settings.accent.color)
             } else {
                 switch screen {
                 case .quick:    QuickView(screen: $screen)
@@ -24,6 +26,14 @@ struct RootView: View {
         .preferredColorScheme(state.settings.colorScheme)
         .animation(.easeInOut(duration: 0.22), value: screen)
         .animation(.easeInOut(duration: 0.25), value: state.connected)
+        .animation(.easeInOut(duration: 0.2), value: state.isLocked)
+        // The popover tears its content down when it closes, so this is the
+        // moment to shut the app again. Also send the user back to the
+        // balance rather than wherever they last were.
+        .onDisappear {
+            screen = .quick
+            state.lock()
+        }
     }
 }
 

@@ -63,6 +63,11 @@ final class Settings: ObservableObject {
     @Published var launchAtLogin: Bool {
         didSet { UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin") }
     }
+    /// Whether the popover asks who you are before showing anything.
+    @Published var requireUnlock: Bool {
+        didSet { UserDefaults.standard.set(requireUnlock, forKey: "requireUnlock") }
+    }
+
     /// Whether the balance the bank reports has a credit facility folded into
     /// it. Off means the reported figure is taken at face value.
     @Published var balanceIncludesCredit: Bool {
@@ -115,6 +120,7 @@ final class Settings: ObservableObject {
         refreshMinutes = d.object(forKey: "refreshMinutes") as? Int ?? 15
         showBalanceInMenuBar = d.object(forKey: "showBalanceInMenuBar") as? Bool ?? true
         launchAtLogin = d.object(forKey: "launchAtLogin") as? Bool ?? false
+        requireUnlock = d.object(forKey: "requireUnlock") as? Bool ?? false
         balanceIncludesCredit = d.object(forKey: "balanceIncludesCredit") as? Bool ?? false
         creditFacility = d.object(forKey: "creditFacility") as? Double ?? 0
         appearance = d.string(forKey: "appearance") ?? "system"

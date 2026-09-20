@@ -12,6 +12,8 @@ struct OnboardingView: View {
     @State private var publicIP: String?
     @State private var lookingUpIP = false
     @State private var copied = false
+    /// Whether the keys being entered are the public test ones.
+    @State private var sandboxMode = false
 
     var body: some View {
         let accent = state.settings.accent.color
@@ -56,7 +58,7 @@ struct OnboardingView: View {
                     title: "Your Investec account",
                     detail: "Attach your own programmable banking API key.",
                     accent: accent
-                ) { step = .lockdown; lookUpIP() }
+                ) { sandboxMode = false; step = .lockdown; lookUpIP() }
 
                 choiceRow(
                     icon: "shield.lefthalf.filled",
@@ -64,7 +66,9 @@ struct OnboardingView: View {
                     detail: "Try it with the shared Mr Smith test account.",
                     accent: accent
                 ) {
-                    Task { await state.connect(with: .sandbox) }
+                    sandboxMode = true
+                    state.clearError()
+                    step = .keys
                 }
 
                 if let error = state.errorMessage {
@@ -173,15 +177,30 @@ struct OnboardingView: View {
                 }
                 .padding(.bottom, 10)
 
-                Text("YOUR INVESTEC KEYS")
+                Text(sandboxMode ? "SANDBOX KEYS" : "YOUR INVESTEC KEYS")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1.5)
                     .foregroundStyle(accent)
-                Text("Investec Online, then Manage, Investec Developer, Individual Connections, Create new API key.")
+                Text(sandboxMode
+                     ? "Investec publishes shared test keys in their developer documentation. Horizon does not ship them, so copy them across from there."
+                     : "Investec Online, then Manage, Investec Developer, Individual Connections, Create new API key.")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 4)
+                    .padding(.bottom, sandboxMode ? 6 : 10)
+
+                if sandboxMode {
+                    Link(destination: URL(string: "https://developer.investec.com/za/api-products")!) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.right.square").font(.system(size: 10))
+                            Text("Open the Investec developer docs")
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                        .foregroundStyle(accent)
+                    }
                     .padding(.bottom, 10)
+                }
 
                 field("Client ID", text: $clientId, secure: false)
                 field("Client secret", text: $secret, secure: true)
@@ -197,7 +216,7 @@ struct OnboardingView: View {
                             clientId: clientId.trimmingCharacters(in: .whitespaces),
                             secret: secret.trimmingCharacters(in: .whitespaces),
                             apiKey: apiKey.trimmingCharacters(in: .whitespaces),
-                            production: true
+                            production: !sandboxMode
                         ))
                     }
                 }

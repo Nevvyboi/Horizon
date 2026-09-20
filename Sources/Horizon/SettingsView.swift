@@ -119,6 +119,40 @@ struct SettingsView: View {
 
                 Divider().padding(.vertical, 14)
 
+                // Privacy
+                SectionLabel(text: "Privacy")
+                settingRow(
+                    icon: "lock",
+                    title: "Lock when closed",
+                    detail: state.settings.requireUnlock
+                        ? "Ask for \(Unlock.methodDescription.lowercased())"
+                        : "Off, opens straight to your balance"
+                ) {
+                    Toggle("", isOn: Binding(
+                        get: { state.settings.requireUnlock },
+                        set: { on in
+                            state.settings.requireUnlock = on
+                            // Switching it on should take hold now, not on
+                            // the next visit. Switching it off lets the
+                            // current window through without a prompt.
+                            if on { state.lock() } else { state.unlocked = true }
+                        }
+                    ))
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                }
+
+                if state.settings.requireUnlock {
+                    Text("The menu bar opens on a single click, so anyone passing an unlocked laptop can read your balance. With this on, Horizon asks who you are every time the window closes and opens again.\(state.settings.showBalanceInMenuBar ? " Your balance is still printed in the menu bar itself, which you can turn off above." : "")")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 2)
+                }
+
+                Divider().padding(.vertical, 14)
+
                 // Balance
                 SectionLabel(text: "Balance")
                 settingRow(
