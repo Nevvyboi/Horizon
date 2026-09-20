@@ -77,12 +77,28 @@ struct Balance: Equatable {
     var available: Double
     var currency: String
 
-    /// The size of the credit facility, inferred from the gap between what you
-    /// can spend and what you actually hold.
-    var facility: Double { max(0, available - current) }
-    var usingCredit: Bool { current < 0 }
+    /// Money already spent that the bank has not posted yet, signed the same
+    /// way as a transaction so a card swipe waiting to settle is negative.
+    ///
+    /// Card purchases sit as an authorisation for a few days before the
+    /// merchant claims them, and some merchants only settle in a weekly
+    /// batch. The bank holds the money the whole time, so it is gone in every
+    /// sense except the posted balance.
+    var pending: Double = 0
+
+    /// What is really yours once everything in flight lands.
+    var settled: Double { current + pending }
+
+    /// The size of the credit facility.
+    ///
+    /// Inferred from the gap between what may be spent and what is held. The
+    /// available figure is already net of the holds, so the pending amount has
+    /// to be added back or the facility reads short by whatever is in flight.
+    var facility: Double { max(0, available - current - pending) }
+    var usingCredit: Bool { settled < 0 }
     /// The real bottom: spending past this exceeds the facility.
     var floor: Double { -facility }
+    var hasPending: Bool { abs(pending) >= 0.01 }
 }
 
 enum EventKind: Equatable {

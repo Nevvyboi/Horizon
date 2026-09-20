@@ -88,18 +88,23 @@ struct QuickView: View {
                     .padding(.top, 2)
 
                     if let bal, bal.facility > 0 {
-                        HStack(spacing: 6) {
-                            Image(systemName: "creditcard")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.tertiary)
-                            Text(bal.usingCredit
-                                 ? "\(Money.short(abs(bal.current))) into a \(Money.short(bal.facility)) facility, \(Money.short(bal.available)) left"
-                                 : "\(Money.short(bal.facility)) credit facility unused, \(Money.short(bal.available)) spendable")
-                                .font(.system(size: 10.5))
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.top, 6)
+                        balanceNote(
+                            icon: "creditcard",
+                            text: bal.usingCredit
+                                ? "\(Money.short(abs(bal.settled))) into a \(Money.short(bal.facility)) facility, \(Money.short(bal.available)) left"
+                                : "\(Money.short(bal.facility)) credit facility unused, \(Money.short(bal.available)) spendable"
+                        )
+                    }
+
+                    // Money already spent that the bank has not posted yet.
+                    // Some merchants only claim their card swipes once a week,
+                    // so this can sit here for days looking like money you
+                    // still have.
+                    if let bal, bal.hasPending {
+                        balanceNote(
+                            icon: "clock.arrow.circlepath",
+                            text: "\(Money.short(abs(bal.pending))) \(bal.pending < 0 ? "spent but not posted yet" : "incoming but not posted yet"), already counted above"
+                        )
                     }
 
                     // Gauges
@@ -296,6 +301,20 @@ struct QuickView: View {
         .scrollIndicators(.never)
         .frame(height: 520)
         .animation(.easeInOut(duration: 0.2), value: showCalendar)
+    }
+
+    /// A small explanatory line under the headline number.
+    private func balanceNote(icon: String, text: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+                .foregroundStyle(.tertiary)
+            Text(text)
+                .font(.system(size: 10.5))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 6)
     }
 
     private func comingUpSummary(_ f: Forecast) -> String {

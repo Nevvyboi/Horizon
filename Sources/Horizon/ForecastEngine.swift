@@ -262,9 +262,9 @@ enum ForecastEngine {
         }
 
         var points: [ForecastPoint] = [
-            ForecastPoint(date: today, dayOffset: 0, balance: balance.current, events: [])
+            ForecastPoint(date: today, dayOffset: 0, balance: balance.settled, events: [])
         ]
-        var running = balance.current
+        var running = balance.settled
         for d in 1...max(1, horizonDays) {
             let dayEvents = byDay[d] ?? []
             running += dayEvents.reduce(0) { $0 + $1.amount }
@@ -277,7 +277,7 @@ enum ForecastEngine {
         }
 
         let lowestPoint = points.min { $0.balance < $1.balance } ?? points[0]
-        let projected = points.last?.balance ?? balance.current
+        let projected = points.last?.balance ?? balance.settled
 
         let income = events.filter { $0.amount > 0 }.reduce(0) { $0 + $1.amount }
         let recurringOut = events.filter { $0.amount < 0 && $0.kind == .recurring }.reduce(0) { $0 + $1.amount }
@@ -300,14 +300,14 @@ enum ForecastEngine {
         assumptions.append("Average daily spending of about \(Money.short(avgDaily))")
 
         return Forecast(
-            startBalance: balance.current,
+            startBalance: balance.settled,
             horizonDays: horizonDays,
             points: points,
             lowest: (lowestPoint.date, lowestPoint.balance, lowestPoint.dayOffset),
             projected: projected,
             outlook: outlook,
             breakdown: ForecastBreakdown(
-                startBalance: balance.current,
+                startBalance: balance.settled,
                 expectedIncome: income,
                 recurringPayments: recurringOut,
                 typicalSpending: spendOut,

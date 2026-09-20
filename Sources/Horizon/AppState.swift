@@ -59,8 +59,8 @@ final class AppState: ObservableObject {
 
             self.client = client
             self.account = first
-            self.balance = bal
             self.transactions = RecurringDetector.annotate(rawTx, today: today)
+            self.balance = Self.withPending(bal, from: self.transactions)
             self.usingProduction = creds.production
             rebuildForecast()
             self.lastUpdated = Date()
@@ -107,8 +107,8 @@ final class AppState: ObservableObject {
             async let balanceCall = client.balance(accountId: account.id)
             async let txCall = client.transactions(accountId: account.id)
             let (bal, rawTx) = try await (balanceCall, txCall)
-            self.balance = bal
             self.transactions = RecurringDetector.annotate(rawTx, today: today)
+            self.balance = Self.withPending(bal, from: self.transactions)
             rebuildForecast()
             self.lastUpdated = Date()
             clearError()
@@ -129,6 +129,21 @@ final class AppState: ObservableObject {
         forecast = nil
         lastUpdated = nil
         connected = false
+    }
+
+    /// Fold everything still in flight into the balance.
+    ///
+    /// The balance endpoint reports what has posted. A card swipe from this
+    /// morning, or anything from a merchant that only settles once a week,
+    /// shows up in the transaction feed marked pending long before it reaches
+    /// the posted figure. Counting it here keeps the forecast from starting
+    /// out richer than the account really is.
+    private static func withPending(_ balance: Balance, from transactions: [Transaction]) -> Balance {
+        var out = balance
+        out.pending = transactions
+            .filter(\.isPending)
+            .reduce(0) { $0 + $1.amount }
+        return out
     }
 
     private func rebuildForecast() {
@@ -186,6 +201,6 @@ final class AppState: ObservableObject {
     /// Short text for the menu bar, e.g. "R33 607".
     var menuBarTitle: String {
         guard settings.showBalanceInMenuBar, let balance else { return "Horizon" }
-        return Money.short(balance.current)
+        return Money.short(balance.settled)
     }
 }
