@@ -91,8 +91,8 @@ struct QuickView: View {
                         balanceNote(
                             icon: "creditcard",
                             text: bal.usingCredit
-                                ? "\(Money.short(abs(bal.settled))) into a \(Money.short(bal.facility)) facility, \(Money.short(bal.available)) left"
-                                : "\(Money.short(bal.facility)) credit facility unused, \(Money.short(bal.available)) spendable"
+                                ? "\(Money.short(abs(bal.settled))) into a \(Money.short(bal.facility)) facility, \(Money.short(bal.spendable)) left"
+                                : "\(Money.short(bal.facility)) credit facility unused, \(Money.short(bal.spendable)) spendable"
                         )
                     }
 

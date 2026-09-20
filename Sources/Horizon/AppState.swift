@@ -19,6 +19,9 @@ final class AppState: ObservableObject {
     @Published var lastUpdated: Date?
     @Published var usingProduction = false
 
+    /// Exactly what the bank last reported, before the app's corrections.
+    private var rawBalance: Balance?
+
     private var client: InvestecClient?
     private var refreshTask: Task<Void, Never>?
     private var bag = Set<AnyCancellable>()
@@ -33,7 +36,12 @@ final class AppState: ObservableObject {
         // Settings is its own observable object, so without this the views
         // watching AppState never hear about an accent or interval change.
         settings.objectWillChange
-            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+                // objectWillChange fires before the new value lands, so let
+                // the change settle before reading it back.
+                Task { @MainActor in self?.reapplyBalanceSettings() }
+            }
             .store(in: &bag)
 
         // Reconnect silently if the user has connected before.
@@ -60,7 +68,8 @@ final class AppState: ObservableObject {
             self.client = client
             self.account = first
             self.transactions = RecurringDetector.annotate(rawTx, today: today)
-            self.balance = Self.withPending(bal, from: self.transactions)
+            self.rawBalance = bal
+            self.balance = adjusted(bal)
             self.usingProduction = creds.production
             rebuildForecast()
             self.lastUpdated = Date()
@@ -108,7 +117,8 @@ final class AppState: ObservableObject {
             async let txCall = client.transactions(accountId: account.id)
             let (bal, rawTx) = try await (balanceCall, txCall)
             self.transactions = RecurringDetector.annotate(rawTx, today: today)
-            self.balance = Self.withPending(bal, from: self.transactions)
+            self.rawBalance = bal
+            self.balance = adjusted(bal)
             rebuildForecast()
             self.lastUpdated = Date()
             clearError()
@@ -125,25 +135,36 @@ final class AppState: ObservableObject {
         client = nil
         account = nil
         balance = nil
+        rawBalance = nil
         transactions = []
         forecast = nil
         lastUpdated = nil
         connected = false
     }
 
-    /// Fold everything still in flight into the balance.
+    /// Turn what the bank reported into what the app should reason about.
     ///
-    /// The balance endpoint reports what has posted. A card swipe from this
-    /// morning, or anything from a merchant that only settles once a week,
-    /// shows up in the transaction feed marked pending long before it reaches
-    /// the posted figure. Counting it here keeps the forecast from starting
-    /// out richer than the account really is.
-    private static func withPending(_ balance: Balance, from transactions: [Transaction]) -> Balance {
+    /// Two corrections. The balance endpoint reports what has posted, so a
+    /// card swipe from this morning, or anything from a merchant that only
+    /// settles once a week, is missing from it and has to be read off the
+    /// transaction feed instead. And if the user has told us their reported
+    /// balance has a credit facility folded into it, the borrowed part is
+    /// taken back out so the figure is their own money.
+    private func adjusted(_ balance: Balance) -> Balance {
         var out = balance
         out.pending = transactions
             .filter(\.isPending)
             .reduce(0) { $0 + $1.amount }
+        out.facilityInBalance = settings.facilityToStrip
         return out
+    }
+
+    /// Reapply the settings to the balance the bank last gave us, without
+    /// going back to the network.
+    func reapplyBalanceSettings() {
+        guard let rawBalance else { return }
+        balance = adjusted(rawBalance)
+        rebuildForecast()
     }
 
     private func rebuildForecast() {

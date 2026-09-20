@@ -119,6 +119,52 @@ struct SettingsView: View {
 
                 Divider().padding(.vertical, 14)
 
+                // Balance
+                SectionLabel(text: "Balance")
+                settingRow(
+                    icon: "creditcard",
+                    title: "Balance includes credit",
+                    detail: state.settings.balanceIncludesCredit
+                        ? "Taking \(Money.short(state.settings.creditFacility)) back out"
+                        : "Reported balance used as is"
+                ) {
+                    Toggle("", isOn: Binding(
+                        get: { state.settings.balanceIncludesCredit },
+                        set: { state.settings.balanceIncludesCredit = $0 }
+                    ))
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                }
+
+                if state.settings.balanceIncludesCredit {
+                    settingRow(
+                        icon: "banknote",
+                        title: "Facility size",
+                        detail: "What the bank lends you, not your own money"
+                    ) {
+                        HStack(spacing: 2) {
+                            Text("R").font(.system(size: 11)).foregroundStyle(.secondary)
+                            TextField("0", value: Binding(
+                                get: { state.settings.creditFacility },
+                                set: { state.settings.creditFacility = max(0, $0) }
+                            ), format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.system(size: 11))
+                            .monospacedDigit()
+                            .frame(width: 74)
+                        }
+                    }
+
+                    Text("Some accounts report one balance with the overdraft already counted in it, so money you have borrowed looks like money you have. Turning this on subtracts the facility, leaving what is actually yours, and the forecast then measures how close you are to the bottom of the facility instead of to zero.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 2)
+                }
+
+                Divider().padding(.vertical, 14)
+
                 // Account
                 SectionLabel(text: "Account")
                 if let account = state.account {

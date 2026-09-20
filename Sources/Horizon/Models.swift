@@ -86,15 +86,41 @@ struct Balance: Equatable {
     /// sense except the posted balance.
     var pending: Double = 0
 
-    /// What is really yours once everything in flight lands.
-    var settled: Double { current + pending }
+    /// A credit facility the bank has already counted inside the reported
+    /// balance, so the borrowed money is sitting in the figure as though it
+    /// were yours.
+    ///
+    /// Some accounts report the facility separately, which shows up as a gap
+    /// between the available and current figures and can be worked out. Others
+    /// report one number with the facility folded in, and nothing in the
+    /// response distinguishes a drawn facility from real money. That case
+    /// cannot be detected, only told, so this is set from the user's own
+    /// setting rather than from the API.
+    var facilityInBalance: Double = 0
+
+    /// What is really yours once everything in flight lands and any borrowed
+    /// headroom is taken back out.
+    var settled: Double { current + pending - facilityInBalance }
 
     /// The size of the credit facility.
     ///
-    /// Inferred from the gap between what may be spent and what is held. The
-    /// available figure is already net of the holds, so the pending amount has
-    /// to be added back or the facility reads short by whatever is in flight.
-    var facility: Double { max(0, available - current - pending) }
+    /// When the user has told us the balance includes one, take them at their
+    /// word. Otherwise infer it from the gap between what may be spent and
+    /// what is held. The available figure is already net of the holds, so the
+    /// pending amount has to be added back or the facility reads short by
+    /// whatever is in flight.
+    var facility: Double {
+        facilityInBalance > 0 ? facilityInBalance : max(0, available - current - pending)
+    }
+
+    /// What can still be spent, counting borrowed headroom.
+    ///
+    /// When the facility was folded into the reported figure, the available
+    /// number the bank gave us is the same folded figure and says nothing
+    /// about holds, so work it out from the corrected balance instead.
+    var spendable: Double {
+        facilityInBalance > 0 ? settled + facility : available
+    }
     var usingCredit: Bool { settled < 0 }
     /// The real bottom: spending past this exceeds the facility.
     var floor: Double { -facility }

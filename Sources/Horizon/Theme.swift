@@ -63,6 +63,21 @@ final class Settings: ObservableObject {
     @Published var launchAtLogin: Bool {
         didSet { UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin") }
     }
+    /// Whether the balance the bank reports has a credit facility folded into
+    /// it. Off means the reported figure is taken at face value.
+    @Published var balanceIncludesCredit: Bool {
+        didSet { UserDefaults.standard.set(balanceIncludesCredit, forKey: "balanceIncludesCredit") }
+    }
+    /// The size of that facility, in rands.
+    @Published var creditFacility: Double {
+        didSet { UserDefaults.standard.set(creditFacility, forKey: "creditFacility") }
+    }
+
+    /// The facility to take back out of the reported balance, or zero.
+    var facilityToStrip: Double {
+        balanceIncludesCredit ? max(0, creditFacility) : 0
+    }
+
     /// "system", "light" or "dark".
     @Published var appearance: String {
         didSet {
@@ -100,6 +115,8 @@ final class Settings: ObservableObject {
         refreshMinutes = d.object(forKey: "refreshMinutes") as? Int ?? 15
         showBalanceInMenuBar = d.object(forKey: "showBalanceInMenuBar") as? Bool ?? true
         launchAtLogin = d.object(forKey: "launchAtLogin") as? Bool ?? false
+        balanceIncludesCredit = d.object(forKey: "balanceIncludesCredit") as? Bool ?? false
+        creditFacility = d.object(forKey: "creditFacility") as? Double ?? 0
         appearance = d.string(forKey: "appearance") ?? "system"
     }
 }

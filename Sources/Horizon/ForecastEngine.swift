@@ -285,7 +285,11 @@ enum ForecastEngine {
 
         let monthlyCommitments = list.filter { $0.direction == .money_out }
             .reduce(0) { $0 + $1.typicalAmount }
-        let threshold = monthlyCommitments > 0 ? monthlyCommitments : max(1, balance.available * 0.3)
+        // Fall back to a share of your own money, never of the facility:
+        // borrowed headroom should not make an account look comfortable.
+        let threshold = monthlyCommitments > 0
+            ? monthlyCommitments
+            : max(1, max(0, balance.settled) * 0.3)
         let outlook: Outlook =
             lowestPoint.balance <= balance.floor ? .low          // would exceed the facility
             : lowestPoint.balance < 0 ? .tight                   // dipping into credit
