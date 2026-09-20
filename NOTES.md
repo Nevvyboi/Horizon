@@ -25,6 +25,25 @@ yet claimed by the merchant is missing from it and has to be read off the
 transaction feed, where it is marked pending. Some merchants only settle
 weekly, so this can be days out of date. See `AppState.adjusted`.
 
+**Pending card purchases need asking for.** The transactions endpoint leaves
+them out by default. Append `?includePending=true` and they arrive with
+`status: PENDING`. Measured against the sandbox: the plain call returns 263
+transactions, all posted; with the parameter, 266, three of them pending.
+Pending records have a null `postingDate` and an empty `uuid`, so date parsing
+has to fall back to `transactionDate`.
+
+This one is quietly expensive. Without the parameter the pending total reads
+zero, and because the credit facility is derived from the gap between the
+available and current figures, the facility comes out short by exactly
+whatever is being held. A real account with R136.16 of card purchases waiting
+to settle showed a R10 000 facility as R9 864, and the balance looked R136
+healthier than it was. Everything downstream of the balance inherits that.
+
+**The available figure is net of holds.** Confirmed by arithmetic against a
+real account rather than from documentation: available R9 387.02 = 10 000
+facility - 476.82 posted - 136.16 pending. So the pending amount has to be
+added back when working the facility out.
+
 **A credit facility may or may not be visible.** Some accounts report it
 separately, which leaves a gap between the available and current figures that
 can be measured. Others report a single number with the facility already
@@ -74,6 +93,13 @@ it out into its own small `View`.
 
 **Keyed ForEach by index for repeated labels.** Weekday initials deduplicate
 and collapse under `id: \.self`.
+
+**Never read the Keychain on the main thread at startup.** `SecItemCopyMatching`
+blocks while macOS puts up a password prompt, and doing that during
+`AppState.init` means SwiftUI never builds the scene. The process runs with no
+menu bar icon at all and looks like it failed to launch. It hides well because
+the prompt only appears when the code signature changes, which for an ad hoc
+build is every rebuild. Load in a detached task.
 
 ## Credentials
 

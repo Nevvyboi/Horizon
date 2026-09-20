@@ -25,9 +25,9 @@ balance is heading, with the reasoning shown.
 > Most banking apps tell you what already happened. Horizon tells you what happens next.
 > One glance, about two seconds: **current balance, future balance, and what caused the change.**
 
-Horizon lives in the menu bar as a zebra and your live balance. Click it and the whole
-product is one popover. Every screenshot below is the real app running against a live
-Investec account.
+Horizon lives in the menu bar as a gauge ring and your live balance. Click it and the
+whole product is one popover. Every screenshot below is the real app, running against
+Investec's shared sandbox account rather than anyone's own money.
 
 <br />
 
@@ -56,6 +56,17 @@ The three rings are the whole month compressed:
 **This month** switches between the month total and a per day average, so "R19 360 spent"
 becomes "R968 a day versus a typical R579". The daily view is usually the one that
 explains the month.
+
+Two things banks routinely blur, spelled out here instead:
+
+- **Money spent but not posted.** Card purchases sit as an authorisation for days, and
+  some merchants only claim theirs in a weekly batch. Investec leaves these out of the
+  transactions feed unless asked, so Horizon asks, and counts them. The headline is what
+  is really yours once everything in flight lands, not what has merely cleared.
+- **Credit that is not your money.** On an account with a facility the headline is what
+  you actually hold, which can be negative, with a line underneath saying how far into the
+  facility you are and how much is still spendable. The forecast measures its buffer
+  against the bottom of the facility rather than against zero.
 
 Below it, the forecast curve and where it lands in 30 days.
 
@@ -155,7 +166,9 @@ is also a refresh button in the header for right now.
 
 **Lock when closed** puts Touch ID, or your login password, in front of the window. The
 menu bar opens on a single click, so this is what stops someone reading your balance off an
-unlocked laptop. It asks as the window opens and locks again as it closes.
+unlocked laptop. It asks as the window opens and locks again as it closes, and it keeps the
+balance out of the menu bar too, since guarding the window while printing the number above
+it would protect nothing.
 
 **Balance includes credit** is for accounts that report one figure with the overdraft
 already counted in. Tell Horizon the size of the facility and it subtracts it, leaving what
@@ -300,16 +313,23 @@ each rebuild will ask for Keychain permission again. A real signing identity rem
 
 ```
 Sources/Horizon/
-  HorizonApp.swift      MenuBarExtra entry point
-  AppState.swift        loading, refreshing, scenario building, error reporting
-  InvestecClient.swift  OAuth2 and the read only endpoints
-  ForecastEngine.swift  recurring detection and the projection
-  Keychain.swift        credential storage
-  PublicIP.swift        the address to allowlist
-  Models.swift          the shared shapes
-  Theme.swift           accent themes and appearance
-  ZebraMark.swift       the mark
-  RootView / FutureView / ActivityView / SettingsView / OnboardingView
+  HorizonApp.swift        MenuBarExtra entry point
+  AppState.swift          loading, refreshing, scenario building, error reporting
+  InvestecClient.swift    OAuth2 and the read only endpoints
+  ForecastEngine.swift    recurring detection and the projection
+  Keychain.swift          credential storage
+  Unlock.swift            Touch ID and the locked window
+  PublicIP.swift          the address to allowlist
+  Models.swift            the shared shapes, including the balance arithmetic
+  Money.swift             rand and date formatting
+  Theme.swift             accent themes, appearance and stored settings
+  GaugeMark.swift         the mark, drawn rather than shipped as artwork
+  Components.swift        gauges, the forecast chart, shared rows
+  RootView.swift          the balance screen and the screen switch
+  FutureView.swift        the forecast, scenarios and the timeline
+  ActivityCalendar.swift  the month and day cubes
+  SettingsView.swift      settings
+  OnboardingView.swift    connecting an account
 ```
 
 <br />
