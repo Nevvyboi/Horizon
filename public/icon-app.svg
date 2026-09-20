@@ -1,0 +1,79 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Horizon">
+  <defs>
+    <linearGradient id="glass" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#3b4256"/>
+      <stop offset="45%" stop-color="#242a37"/>
+      <stop offset="100%" stop-color="#12151c"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0c58a" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#c88a4a" stop-opacity="0.35"/>
+      <stop offset="65%" stop-color="#c88a4a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f0c58a" stop-opacity="0.9"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe9c7" stop-opacity="1"/>
+      <stop offset="30%" stop-color="#f4b866" stop-opacity="0.85"/>
+      <stop offset="70%" stop-color="#c88a4a" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4cf9a"/>
+      <stop offset="100%" stop-color="#c88a4a"/>
+    </linearGradient>
+    <linearGradient id="dune1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#20242f"/>
+      <stop offset="100%" stop-color="#14171f"/>
+    </linearGradient>
+    <linearGradient id="dune2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#171a22"/>
+      <stop offset="100%" stop-color="#0d0f14"/>
+    </linearGradient>
+    <linearGradient id="crest" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c88a4a" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#f0c58a" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e6b578" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="18%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect x="24" y="24" width="464" height="464" rx="108"/>
+    </clipPath>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#glass)"/>
+
+  <g clip-path="url(#card)">
+    <rect x="24" y="24" width="464" height="260" fill="url(#sheen)"/>
+
+    <ellipse cx="256" cy="312" rx="230" ry="150" fill="url(#sunGlow)"/>
+
+    <circle cx="256" cy="300" r="128" fill="none" stroke="url(#ring)" stroke-width="8"/>
+    <circle cx="256" cy="300" r="128" fill="none" stroke="#ffe9c7" stroke-opacity="0.5" stroke-width="2"/>
+
+    <ellipse cx="256" cy="312" rx="100" ry="28" fill="url(#sunGlow)"/>
+
+    <path d="M24 312 C 150 280, 360 280, 488 312 L488 332 L24 332 Z" fill="url(#dune1)"/>
+    <path d="M24 312 C 150 280, 360 280, 488 312" fill="none" stroke="url(#crest)" stroke-width="3"/>
+
+    <path d="M24 392 C 130 338, 210 378, 300 392 C 380 404, 430 374, 488 386 L488 488 L24 488 Z" fill="url(#dune1)"/>
+    <path d="M24 452 C 130 398, 250 452, 340 460 C 410 466, 450 442, 488 452 L488 488 L24 488 Z" fill="url(#dune2)"/>
+    <path d="M24 392 C 130 338, 210 378, 300 392" fill="none" stroke="#c88a4a" stroke-opacity="0.28" stroke-width="1.8"/>
+
+    <g>
+      <rect x="352" y="256" width="18" height="56" rx="4" fill="url(#bar)"/>
+      <rect x="382" y="230" width="18" height="82" rx="4" fill="url(#bar)"/>
+      <rect x="412" y="202" width="18" height="110" rx="4" fill="url(#bar)"/>
+      <rect x="442" y="172" width="18" height="140" rx="4" fill="url(#bar)"/>
+    </g>
+  </g>
+
+  <rect x="24.5" y="24.5" width="463" height="463" rx="107.5" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+</svg>

@@ -1,0 +1,25 @@
+[package]
+name = "balancebar"
+version = "0.1.0"
+description = "A tiny glass menu-bar utility that shows your balance and what it is about to do next."
+authors = ["Nevin Tom"]
+edition = "2021"
+
+[lib]
+name = "balancebar_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "macos-private-api"] }
+tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+base64 = "0.22"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

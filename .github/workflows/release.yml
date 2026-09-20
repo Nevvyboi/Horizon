@@ -1,0 +1,67 @@
+name: Release
+
+# Build the Horizon desktop app for macOS and Windows and attach the installers
+# to a GitHub Release. Windows cannot be cross-compiled from macOS, so both are
+# built here on their native runners. Trigger by pushing a tag like v0.1.0, or
+# run manually from the Actions tab.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+            args: "--target universal-apple-darwin --bundles app,dmg"
+          - platform: windows-latest
+            rust_targets: ""
+            args: "--bundles nsis,msi"
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Cache cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Horizon ${{ github.ref_name }}"
+          releaseBody: |
+            Horizon, a tiny glass menu-bar balance forecaster for Investec.
+
+            Downloads:
+            - macOS: the `.dmg` (universal, Apple Silicon + Intel)
+            - Windows: the `.msi` or the NSIS `-setup.exe`
+
+            Builds are unsigned; on first launch you may need to allow the app
+            in Gatekeeper (macOS) or SmartScreen (Windows).
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}

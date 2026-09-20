@@ -1,0 +1,101 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Horizon">
+  <defs>
+    <linearGradient id="glass" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#3b4256"/>
+      <stop offset="45%" stop-color="#242a37"/>
+      <stop offset="100%" stop-color="#12151c"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0c58a" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#c88a4a" stop-opacity="0.35"/>
+      <stop offset="65%" stop-color="#c88a4a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f0c58a" stop-opacity="0.9"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe9c7" stop-opacity="1"/>
+      <stop offset="30%" stop-color="#f4b866" stop-opacity="0.85"/>
+      <stop offset="70%" stop-color="#c88a4a" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4cf9a"/>
+      <stop offset="100%" stop-color="#c88a4a"/>
+    </linearGradient>
+    <linearGradient id="dune1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#20242f"/>
+      <stop offset="100%" stop-color="#14171f"/>
+    </linearGradient>
+    <linearGradient id="dune2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#171a22"/>
+      <stop offset="100%" stop-color="#0d0f14"/>
+    </linearGradient>
+    <linearGradient id="crest" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c88a4a" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#f0c58a" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e6b578" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cfd3da"/>
+      <stop offset="100%" stop-color="#9aa0ab"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="18%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+    <clipPath id="card">
+      <rect x="24" y="24" width="464" height="464" rx="108"/>
+    </clipPath>
+  </defs>
+
+  <!-- glass card -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#glass)"/>
+
+  <g clip-path="url(#card)">
+    <!-- top sheen -->
+    <rect x="24" y="24" width="464" height="240" fill="url(#sheen)"/>
+
+    <!-- warm glow where the sun meets the horizon -->
+    <ellipse cx="256" cy="300" rx="230" ry="150" fill="url(#sunGlow)" filter="url(#soft)"/>
+
+    <!-- the cresting sun ring -->
+    <circle cx="256" cy="292" r="118" fill="none" stroke="url(#ring)" stroke-width="7"/>
+    <circle cx="256" cy="292" r="118" fill="none" stroke="#ffe9c7" stroke-opacity="0.5" stroke-width="2"/>
+
+    <!-- bright core at the horizon -->
+    <ellipse cx="256" cy="300" rx="90" ry="26" fill="url(#sunGlow)"/>
+
+    <!-- far dune (with a glowing crest = the horizon line) -->
+    <path d="M24 300 C 150 270, 360 270, 488 300 L488 320 L24 320 Z" fill="url(#dune1)"/>
+    <path d="M24 300 C 150 270, 360 270, 488 300" fill="none" stroke="url(#crest)" stroke-width="2.5"/>
+
+    <!-- rolling foreground dunes -->
+    <path d="M24 372 C 130 322, 210 360, 300 372 C 380 382, 430 356, 488 366 L488 488 L24 488 Z" fill="url(#dune1)"/>
+    <path d="M24 430 C 130 380, 250 430, 340 436 C 410 440, 450 420, 488 428 L488 488 L24 488 Z" fill="url(#dune2)"/>
+    <!-- subtle rim light on a dune edge -->
+    <path d="M24 372 C 130 322, 210 360, 300 372" fill="none" stroke="#c88a4a" stroke-opacity="0.28" stroke-width="1.6"/>
+
+    <!-- ascending forecast bars -->
+    <g>
+      <rect x="356" y="252" width="16" height="50" rx="4" fill="url(#bar)"/>
+      <rect x="384" y="230" width="16" height="72" rx="4" fill="url(#bar)"/>
+      <rect x="412" y="205" width="16" height="97" rx="4" fill="url(#bar)"/>
+      <rect x="440" y="178" width="16" height="124" rx="4" fill="url(#bar)"/>
+    </g>
+
+    <!-- wordmark -->
+    <text x="256" y="452" text-anchor="middle" fill="url(#word)"
+          font-family="-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif"
+          font-size="46" font-weight="500" letter-spacing="16">HORIZON</text>
+  </g>
+
+  <!-- warm glass rim -->
+  <rect x="24.5" y="24.5" width="463" height="463" rx="107.5" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+</svg>

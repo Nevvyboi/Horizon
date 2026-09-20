@@ -1,0 +1,76 @@
+Horizon knowledge file
+======================
+
+Field notes from building this. Mostly the Investec-specific things and the
+forecasting judgement calls that cost real time, so the next person does not
+have to re-learn them.
+
+
+1. Sandbox and production use DIFFERENT hosts (this bites everyone)
+   Sandbox serves BOTH the token and the data from
+   openapisandbox.investec.com, token path /identity/v2/oauth2/token.
+   Production serves both from openapi.investec.com (same paths, different
+   host). Point sandbox code at the production host and every call fails auth
+   while looking, from the outside, like an empty account. The two host sets
+   live in vite.config.ts (HOSTS.sandbox / HOSTS.production) and in
+   src-tauri/src/lib.rs. When a token call 401s or every data call 404s, check
+   which host you are hitting first.
+
+
+2. The transactions API talks RANDS, as plain numbers
+   e.g. 8500 or 152.75, not cents. We keep the number exactly as the wire gives
+   it and only attach a sign from the DEBIT/CREDIT type (investecAdapter.ts).
+   Do not multiply by 100 "to be safe", you will be off by 100x.
+
+
+3. The browser must NEVER hold the secret, and Investec sends no CORS headers
+   So a pure frontend cannot call Investec directly on two counts. The fix is a
+   tiny same-origin proxy that holds the credentials and forwards only the three
+   read paths (/accounts, /accounts/{id}/balance, /accounts/{id}/transactions):
+   - dev: a Vite middleware plugin (vite.config.ts)
+   - packaged: a Tauri command (src-tauri/src/lib.rs, investec_read)
+   The React adapter always calls /api/investec/* on its own origin and never
+   learns the secret. User-supplied keys are POSTed to /api/investec/credentials
+   and held in server memory only, never written to disk, never logged, never
+   put in localStorage. Only the source label ("live") is persisted.
+
+
+4. Vite reloads .env only on a SERVER restart
+   loadEnv() runs when the plugin initialises, i.e. at server start. Editing
+   .env while `npm run dev` is running does nothing until you restart it (or
+   touch vite.config.ts, which makes Vite restart itself). Learned this the
+   slow way while wiring up credentials.
+
+
+5. Recurring detection: regularity beats volume
+   Early versions flagged "Checkers" and "Uber" as recurring because they show
+   up a lot. They are frequent but IRREGULAR. The fix (transactionService.ts)
+   is to require 3+ occurrences AND a tight interval: score regularity as
+   1 - spread/(cadence*0.5), drop anything under 0.6 regularity, and only then
+   blend in volume. A real debit order lands on almost the same interval every
+   month and sails through; noisy card spend does not. Confidence threshold
+   0.75. This one change is the difference between a believable "Coming up" list
+   and nonsense.
+
+
+6. Forecast the MINIMUM, not just the endpoint
+   For a scenario like "salary arrives 3 days late", the 30-day END balance is
+   unchanged, the salary still lands inside the window. What changes is how low
+   you dip BEFORE it lands. So the scenario comparison tracks the projected
+   MINIMUM balance, which responds to timing changes, cutbacks and cancellations
+   alike. Comparing endpoints made "salary late" look free, which is wrong.
+
+
+7. Real sandbox data is messy; that is the point
+   The sandbox "Mr Smith" account has hundreds of transactions with long, noisy
+   descriptions (store numbers, city names). normaliseKey() strips digits and a
+   few place words before grouping so repeats actually cluster. The forecast on
+   real data drops from ~R33k to ~R11k over 30 days, a real trajectory, not a
+   canned demo number. Keep the demo honest: show the assumptions, and say the
+   forecast can be wrong.
+
+
+8. Keep /check-style work off the hot path (relevant if you add card hooks)
+   Not used here (Horizon is read-only), but if you extend it with the
+   programmable card: the beforeTransaction hook has ~2 seconds and approves the
+   spend itself if you are slow. Never put a bank call on that path.
