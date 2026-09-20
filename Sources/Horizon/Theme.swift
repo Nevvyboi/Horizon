@@ -1,20 +1,27 @@
 import SwiftUI
 
-/// Accent themes. The whole interface pulls its accent from here, so a rebrand
-/// is one tap. Money in / money out stay green and red, because those carry
-/// meaning rather than branding.
+private func hex(_ value: UInt32) -> Color {
+    Color(
+        red: Double((value >> 16) & 0xFF) / 255,
+        green: Double((value >> 8) & 0xFF) / 255,
+        blue: Double(value & 0xFF) / 255
+    )
+}
+
+/// Accent themes, drawn from the Floati palette. Money in and money out keep
+/// their own colours, because green and red carry meaning rather than brand.
 struct Accent: Identifiable, Equatable {
     let id: String
     let name: String
     let color: Color
 
     static let all: [Accent] = [
-        Accent(id: "bronze",   name: "Bronze",   color: Color(red: 0.78, green: 0.54, blue: 0.29)),
-        Accent(id: "azure",    name: "Azure",    color: Color(red: 0.29, green: 0.59, blue: 0.88)),
-        Accent(id: "violet",   name: "Violet",   color: Color(red: 0.55, green: 0.48, blue: 0.85)),
-        Accent(id: "emerald",  name: "Emerald",  color: Color(red: 0.25, green: 0.68, blue: 0.50)),
-        Accent(id: "rose",     name: "Rose",     color: Color(red: 0.85, green: 0.39, blue: 0.48)),
-        Accent(id: "graphite", name: "Graphite", color: Color(red: 0.60, green: 0.64, blue: 0.70)),
+        Accent(id: "indigo", name: "Indigo", color: hex(0x5B5BF6)),
+        Accent(id: "violet", name: "Violet", color: hex(0x7C3AED)),
+        Accent(id: "teal",   name: "Teal",   color: hex(0x0891B2)),
+        Accent(id: "green",  name: "Green",  color: hex(0x2D9D78)),
+        Accent(id: "amber",  name: "Amber",  color: hex(0xD97706)),
+        Accent(id: "rose",   name: "Rose",   color: hex(0xE11D48)),
     ]
 
     static func named(_ id: String) -> Accent {
@@ -23,9 +30,13 @@ struct Accent: Identifiable, Equatable {
 }
 
 enum Palette {
-    static let moneyIn = Color(red: 0.42, green: 0.76, blue: 0.56)
-    static let moneyOut = Color(red: 0.85, green: 0.38, blue: 0.33)
-    static let warn = Color(red: 0.82, green: 0.64, blue: 0.33)
+    /// Floati greens and reds.
+    static let moneyIn = hex(0x2D9D78)
+    static let moneyOut = hex(0xE11D48)
+    static let warn = hex(0xD97706)
+    /// Floati paper and ink, for surfaces that need a warm base.
+    static let paper = hex(0xF0EDE6)
+    static let inkDeep = hex(0x1A1614)
 
     static func outlook(_ o: Outlook) -> Color {
         switch o {
@@ -58,7 +69,7 @@ final class Settings: ObservableObject {
 
     init() {
         let d = UserDefaults.standard
-        accentId = d.string(forKey: "accentId") ?? "bronze"
+        accentId = d.string(forKey: "accentId") ?? "indigo"
         refreshMinutes = d.object(forKey: "refreshMinutes") as? Int ?? 15
         showBalanceInMenuBar = d.object(forKey: "showBalanceInMenuBar") as? Bool ?? true
         launchAtLogin = d.object(forKey: "launchAtLogin") as? Bool ?? false

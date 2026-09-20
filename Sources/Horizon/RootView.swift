@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Screen {
-    case quick, future, settings
+    case quick, future, settings, activity
 }
 
 struct RootView: View {
@@ -17,6 +17,7 @@ struct RootView: View {
                 case .quick:    QuickView(screen: $screen)
                 case .future:   FutureView(screen: $screen)
                 case .settings: SettingsView(screen: $screen)
+                case .activity: ActivityView(screen: $screen)
                 }
             }
         }
@@ -44,12 +45,24 @@ struct QuickView: View {
                         Text("Horizon").font(.system(size: 12, weight: .semibold))
                     }
                     Spacer()
-                    Button { Task { await state.refresh() } } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 11, weight: .medium))
+                    Button { screen = .activity } label: {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 12, weight: .medium))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
+                    .help("Activity")
+                    Button { Task { await state.refresh() } } label: {
+                        if state.loading {
+                            ProgressView().controlSize(.mini).scaleEffect(0.6)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .help("Refresh now")
                     Button { screen = .settings } label: {
                         Image(systemName: "gearshape")
                             .font(.system(size: 12, weight: .medium))
@@ -106,7 +119,15 @@ struct QuickView: View {
                     // This month
                     card {
                         HStack {
-                            SectionLabel(text: "This month")
+                            Button { screen = .activity } label: {
+                                HStack(spacing: 4) {
+                                    SectionLabel(text: "This month")
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 7, weight: .semibold))
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
+                            .buttonStyle(.plain)
                             Spacer()
                             Picker("", selection: $monthView) {
                                 Text("Month").tag(true)
@@ -217,6 +238,7 @@ struct QuickView: View {
             }
             .padding(16)
         }
+        .scrollIndicators(.never)
         .frame(height: 520)
     }
 

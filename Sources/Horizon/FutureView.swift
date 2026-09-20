@@ -127,6 +127,7 @@ struct FutureView: View {
             }
             .padding(16)
         }
+        .scrollIndicators(.never)
         .frame(height: 520)
     }
 

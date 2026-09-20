@@ -154,6 +154,7 @@ struct SettingsView: View {
             }
             .padding(16)
         }
+        .scrollIndicators(.never)
         .frame(height: 520)
         .tint(accent)
     }

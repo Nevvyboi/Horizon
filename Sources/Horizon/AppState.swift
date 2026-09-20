@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class AppState: ObservableObject {
@@ -16,11 +17,18 @@ final class AppState: ObservableObject {
 
     private var client: InvestecClient?
     private var refreshTask: Task<Void, Never>?
+    private var bag = Set<AnyCancellable>()
     let settings = Settings()
 
     var today: Date { Day.start(Date()) }
 
     init() {
+        // Settings is its own observable object, so without this the views
+        // watching AppState never hear about an accent or interval change.
+        settings.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &bag)
+
         // Reconnect silently if the user has connected before.
         if let creds = Keychain.load() {
             Task { await connect(with: creds, persist: false) }
