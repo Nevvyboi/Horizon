@@ -6,7 +6,7 @@ enum Screen {
 
 struct RootView: View {
     @EnvironmentObject var state: AppState
-    @State private var screen: Screen = .settings
+    @State private var screen: Screen = .quick
 
     var body: some View {
         Group {
