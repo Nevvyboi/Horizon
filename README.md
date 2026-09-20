@@ -173,12 +173,6 @@ with the allowlist as the likely cause and offers your IP right there in the err
 </tr>
 </table>
 
-<div align="center">
-  <img src="docs/light-mode.png" width="300" alt="Light mode" />
-  <br />
-  <sub>Light mode</sub>
-</div>
-
 <br />
 
 ---
