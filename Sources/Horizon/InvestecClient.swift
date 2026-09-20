@@ -234,7 +234,19 @@ actor InvestecClient {
     }
 
     func transactions(accountId: String) async throws -> [Transaction] {
-        let raw = try await get("/accounts/\(accountId)/transactions", as: RawTransactions.self)
+        // Card purchases that have not settled are left out of this endpoint
+        // unless they are asked for. Without them the money looks unspent,
+        // and the size of a credit facility, which is worked out from the gap
+        // between the available and current figures, comes out short by
+        // whatever is being held. Fall back to the plain call if the
+        // parameter is ever refused, since stale pending beats no data.
+        let raw: RawTransactions
+        do {
+            raw = try await get("/accounts/\(accountId)/transactions?includePending=true",
+                                as: RawTransactions.self)
+        } catch {
+            raw = try await get("/accounts/\(accountId)/transactions", as: RawTransactions.self)
+        }
         let iso = DateFormatter()
         iso.dateFormat = "yyyy-MM-dd"
 

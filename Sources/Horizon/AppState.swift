@@ -49,8 +49,16 @@ final class AppState: ObservableObject {
             .store(in: &bag)
 
         // Reconnect silently if the user has connected before.
-        if let creds = Keychain.load() {
-            Task { await connect(with: creds, persist: false) }
+        //
+        // Off the main thread, because reading the Keychain can put a system
+        // password prompt on screen and blocks until it is answered. Doing
+        // that here on the main thread stops SwiftUI ever building the scene,
+        // so the app runs with no menu bar icon at all and looks like it
+        // failed to launch. Ad hoc signing changes on every rebuild and the
+        // Keychain item is bound to the signature, so that prompt is routine.
+        Task.detached(priority: .userInitiated) {
+            guard let creds = Keychain.load() else { return }
+            await self.connect(with: creds, persist: false)
         }
     }
 
