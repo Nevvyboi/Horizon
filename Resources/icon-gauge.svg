@@ -43,9 +43,8 @@
     <!-- unfilled track -->
     <circle cx="256" cy="262" r="140" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="44"/>
 
-    <!-- the gauge sweep, open at the lower left like the app's rings -->
-    <path d="M256 122 A140 140 0 1 1 133 330" fill="none" stroke="url(#arc)"
-          stroke-width="44" stroke-linecap="round"/>
+    <!-- closed ring -->
+    <circle cx="256" cy="262" r="140" fill="none" stroke="url(#arc)" stroke-width="44"/>
 
     <!-- glowing terminus -->
     <circle cx="256" cy="122" r="46" fill="url(#cap)"/>

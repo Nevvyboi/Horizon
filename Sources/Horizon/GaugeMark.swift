@@ -13,11 +13,7 @@ struct GaugeMark: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(color.opacity(0.22), lineWidth: line)
-            Circle()
-                .trim(from: 0, to: 0.76)
-                .stroke(color, style: StrokeStyle(lineWidth: line, lineCap: .round))
-                .rotationEffect(.degrees(-90))
+                .stroke(color, lineWidth: line)
             Circle()
                 .fill(color)
                 .frame(width: line * 0.95, height: line * 0.95)
