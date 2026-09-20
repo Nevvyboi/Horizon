@@ -23,6 +23,9 @@ final class AppState: ObservableObject {
     var today: Date { Day.start(Date()) }
 
     init() {
+        // Apply the saved light/dark choice to the whole app up front.
+        Settings.applyAppearance(settings.appearance)
+
         // Settings is its own observable object, so without this the views
         // watching AppState never hear about an accent or interval change.
         settings.objectWillChange
@@ -37,7 +40,7 @@ final class AppState: ObservableObject {
 
     // MARK: - Connecting
 
-    func connect(with creds: Credentials, persist: Bool = true) async {
+    func connect(with creds: Credentials, persist: Bool = true, allowFallback: Bool = true) async {
         loading = true
         errorMessage = nil
         let client = InvestecClient(credentials: creds)
@@ -61,6 +64,17 @@ final class AppState: ObservableObject {
             if persist { Keychain.save(creds) }
             scheduleRefresh()
         } catch {
+            // Keys the user attaches are assumed to be production. If Investec
+            // rejects them there they may well be sandbox keys, so try the
+            // other host before reporting a failure. Saves asking the user to
+            // pick an environment they should not have to think about.
+            if allowFallback, creds.production,
+               (error as? InvestecClient.ClientError)?.isBadCredentials == true {
+                var alternative = creds
+                alternative.production = false
+                await connect(with: alternative, persist: persist, allowFallback: false)
+                return
+            }
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
         loading = false

@@ -8,7 +8,6 @@ struct OnboardingView: View {
     @State private var clientId = ""
     @State private var secret = ""
     @State private var apiKey = ""
-    @State private var production = true
 
     var body: some View {
         let accent = state.settings.accent.color
@@ -93,14 +92,6 @@ struct OnboardingView: View {
                 field("Client secret", text: $secret, secure: true)
                 field("API key", text: $apiKey, secure: true)
 
-                Picker("", selection: $production) {
-                    Text("Production").tag(true)
-                    Text("Sandbox").tag(false)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .padding(.top, 6)
-
                 if let error = state.errorMessage {
                     errorBox(error)
                 }
@@ -111,7 +102,7 @@ struct OnboardingView: View {
                             clientId: clientId.trimmingCharacters(in: .whitespaces),
                             secret: secret.trimmingCharacters(in: .whitespaces),
                             apiKey: apiKey.trimmingCharacters(in: .whitespaces),
-                            production: production
+                            production: true
                         ))
                     }
                 }

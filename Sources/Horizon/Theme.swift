@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 private func hex(_ value: UInt32) -> Color {
     Color(
@@ -62,10 +63,36 @@ final class Settings: ObservableObject {
     @Published var launchAtLogin: Bool {
         didSet { UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin") }
     }
+    /// "system", "light" or "dark".
+    @Published var appearance: String {
+        didSet {
+            UserDefaults.standard.set(appearance, forKey: "appearance")
+            Settings.applyAppearance(appearance)
+        }
+    }
+
+    /// The menu bar window is system chrome, so SwiftUI's preferredColorScheme
+    /// does not reach it. Setting the whole app's NSAppearance does.
+    static func applyAppearance(_ value: String) {
+        switch value {
+        case "light": NSApp?.appearance = NSAppearance(named: .aqua)
+        case "dark":  NSApp?.appearance = NSAppearance(named: .darkAqua)
+        default:      NSApp?.appearance = nil
+        }
+    }
 
     static let refreshChoices = [5, 10, 15, 30, 60]
 
     var accent: Accent { Accent.named(accentId) }
+
+    /// nil means follow the system.
+    var colorScheme: ColorScheme? {
+        switch appearance {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
 
     init() {
         let d = UserDefaults.standard
@@ -73,5 +100,6 @@ final class Settings: ObservableObject {
         refreshMinutes = d.object(forKey: "refreshMinutes") as? Int ?? 15
         showBalanceInMenuBar = d.object(forKey: "showBalanceInMenuBar") as? Bool ?? true
         launchAtLogin = d.object(forKey: "launchAtLogin") as? Bool ?? false
+        appearance = d.string(forKey: "appearance") ?? "system"
     }
 }

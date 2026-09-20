@@ -6,7 +6,7 @@ enum Screen {
 
 struct RootView: View {
     @EnvironmentObject var state: AppState
-    @State private var screen: Screen = .quick
+    @State private var screen: Screen = .settings
 
     var body: some View {
         Group {
@@ -22,6 +22,7 @@ struct RootView: View {
             }
         }
         .frame(width: 340)
+        .preferredColorScheme(state.settings.colorScheme)
         .animation(.easeInOut(duration: 0.22), value: screen)
         .animation(.easeInOut(duration: 0.25), value: state.connected)
     }

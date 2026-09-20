@@ -28,6 +28,21 @@ struct SettingsView: View {
 
                 // Appearance
                 SectionLabel(text: "Appearance")
+                Text("Background")
+                    .font(.system(size: 12, weight: .medium))
+                    .padding(.top, 8)
+                Picker("", selection: Binding(
+                    get: { state.settings.appearance },
+                    set: { state.settings.appearance = $0 }
+                )) {
+                    Text("System").tag("system")
+                    Text("Light").tag("light")
+                    Text("Dark").tag("dark")
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.top, 6)
+
                 Text("Accent colour")
                     .font(.system(size: 12, weight: .medium))
                     .padding(.top, 8)

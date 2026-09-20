@@ -26,6 +26,11 @@ actor InvestecClient {
             case .malformed: return "Could not read the response from Investec."
             }
         }
+
+        var isBadCredentials: Bool {
+            if case .badCredentials = self { return true }
+            return false
+        }
     }
 
     private var creds: Credentials
