@@ -62,4 +62,7 @@ enum Dates {
     }
 
     static func long(_ date: Date) -> String { longDay.string(from: date) }
+
+    /// 20 Sep, for wording that reads as a sentence rather than a label.
+    static func dayMonth(_ date: Date) -> String { dayMonth.string(from: date) }
 }

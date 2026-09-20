@@ -51,6 +51,7 @@ struct OnboardingView: View {
                 Text("Read only. Horizon never moves money, and your keys are stored in the macOS Keychain.")
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 6)
 
                 choiceRow(

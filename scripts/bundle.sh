@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 
 APP_NAME="Horizon"
 BUNDLE_ID="life.floati.horizon"
-VERSION="0.6.0"
+VERSION="0.6.1"
 OUT="build/${APP_NAME}.app"
 
 echo "Building release binary..."

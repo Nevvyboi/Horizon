@@ -95,27 +95,45 @@ The question mark opens the full arithmetic behind the number.
 
 <br />
 
-## Every day that moves money
+## Every month, then every day
 
 <table>
 <tr>
-<td width="47%"><img src="docs/activity.png" alt="Activity calendar" /></td>
+<td width="47%"><img src="docs/months.png" alt="Month cubes" /></td>
 <td valign="top">
 
-A month at a time, with a dot on every day something happens.
+A cube per month, showing what moved across it. The figure is **signed**, because a month
+is a change and not a balance: green gained, red used.
+
+Hover one and the line above answers the question you actually had, which is what you were
+left with when the month ended. There is no historical balance endpoint, so that number is
+reconstructed by winding the transaction feed back off today's figure.
+
+Months that are not finished cannot be reported as fact, so they carry a **tilde** and the
+hover splits the two halves apart: what has gone so far, and what is still expected. Months
+older than the transaction feed say so rather than quietly repeating the oldest balance
+Horizon happens to know.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+Press a month and it opens into a cube per day.
 
 - **Red** is money out, **green** is money in.
-- **Filled** dots already happened. **Hollow** dots are forecast, so the future half of the
-  month is visibly a prediction rather than a fact.
+- **Filled** dots already happened. **Hollow** dots are expected, so the rest of the month
+  is visibly a prediction rather than a fact.
 - Today is ringed in your accent colour.
 
-Click any day and it opens below with the total and each line item. The **Day** tab steps
-through one day at a time for the same detail without the grid.
+Hover a day for what it used or gained. Press one and it opens below with the total and
+every line item, tagged where something is still pending or only expected.
 
 This is the view that answers "why was last week so expensive" faster than a list of
 transactions ever does.
 
 </td>
+<td width="47%"><img src="docs/activity.png" alt="Day cubes and detail" /></td>
 </tr>
 </table>
 
@@ -135,6 +153,15 @@ forecast curve and the gauges.
 **Auto refresh** picks how often Horizon pulls from Investec, from 5 to 60 minutes. There
 is also a refresh button in the header for right now.
 
+**Lock when closed** puts Touch ID, or your login password, in front of the window. The
+menu bar opens on a single click, so this is what stops someone reading your balance off an
+unlocked laptop. It asks as the window opens and locks again as it closes.
+
+**Balance includes credit** is for accounts that report one figure with the overdraft
+already counted in. Tell Horizon the size of the facility and it subtracts it, leaving what
+is actually yours, and the forecast then measures how close you are to the bottom of the
+facility instead of to zero.
+
 **Account** shows which account is connected, whether it is your own or the shared
 sandbox, and how many transactions the forecast was built from.
 
@@ -151,11 +178,13 @@ Disconnecting wipes the credentials out of the Keychain and returns the app to o
 
 <table>
 <tr>
-<td width="47%"><img src="docs/onboarding.png" alt="Onboarding" /><br /><br /><img src="docs/allowlist.png" alt="IP allowlist step" /></td>
+<td width="47%"><img src="docs/welcome.png" alt="Welcome" /><br /><br /><img src="docs/onboarding.png" alt="Choosing an account" /><br /><br /><img src="docs/allowlist.png" alt="IP allowlist step" /></td>
 <td valign="top">
 
-Two ways in: the **shared Investec sandbox** to try it in one click, or **your own account**
-with keys from Investec Online, then Manage, then Investec Developer.
+Two ways in: the **shared Investec sandbox** to try it out, or **your own account** with
+keys from Investec Online, then Manage, then Investec Developer. Horizon ships with no
+credentials of any kind, so the sandbox route points you at Investec's documentation and
+asks you to paste their published test keys yourself.
 
 There is no production or sandbox switch to get wrong. Your keys are treated as production,
 and if Investec rejects them there Horizon retries the sandbox host automatically.
