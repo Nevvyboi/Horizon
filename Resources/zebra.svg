@@ -1,0 +1,75 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Horizon">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="#39404f"/>
+      <stop offset="45%" stop-color="#232833"/>
+      <stop offset="100%" stop-color="#12151b"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0c58a" stop-opacity="0.85"/>
+      <stop offset="40%" stop-color="#c88a4a" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f0c58a" stop-opacity="0.85"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="72%" r="55%">
+      <stop offset="0%" stop-color="#e8a765" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#c88a4a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="coat" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e7e2d7"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="cardClip">
+      <rect x="24" y="24" width="464" height="464" rx="108"/>
+    </clipPath>
+    <clipPath id="headClip">
+      <ellipse cx="256" cy="288" rx="86" ry="120"/>
+    </clipPath>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#card)"/>
+
+  <g clip-path="url(#cardClip)">
+    <rect x="24" y="24" width="464" height="250" fill="url(#sheen)"/>
+    <ellipse cx="256" cy="380" rx="240" ry="170" fill="url(#glow)"/>
+
+    <!-- ears -->
+    <g>
+      <ellipse cx="192" cy="186" rx="25" ry="44" transform="rotate(-20 192 186)" fill="url(#coat)"/>
+      <ellipse cx="194" cy="190" rx="12" ry="26" transform="rotate(-20 194 190)" fill="#2b313c"/>
+      <ellipse cx="320" cy="186" rx="25" ry="44" transform="rotate(20 320 186)" fill="url(#coat)"/>
+      <ellipse cx="318" cy="190" rx="12" ry="26" transform="rotate(20 318 190)" fill="#2b313c"/>
+    </g>
+
+    <!-- head -->
+    <ellipse cx="256" cy="288" rx="86" ry="120" fill="url(#coat)"/>
+
+    <!-- stripes, clipped to the head -->
+    <g clip-path="url(#headClip)" fill="#13161d">
+      <path d="M244 160 L270 160 L264 268 L250 268 Z"/>
+      <path d="M206 172 L230 165 L240 270 L222 272 Z"/>
+      <path d="M282 165 L306 172 L290 272 L272 270 Z"/>
+      <path d="M170 200 L194 186 L210 274 L188 278 Z"/>
+      <path d="M318 186 L342 200 L324 278 L302 274 Z"/>
+      <path d="M156 250 L178 242 L186 300 L162 304 Z"/>
+      <path d="M334 242 L356 250 L350 304 L326 300 Z"/>
+    </g>
+
+    <!-- mane crest -->
+    <path d="M226 186 Q256 146 286 186 Q256 172 226 186 Z" fill="#13161d"/>
+
+    <!-- eyes -->
+    <ellipse cx="214" cy="300" rx="11" ry="13" fill="#13161d"/>
+    <ellipse cx="298" cy="300" rx="11" ry="13" fill="#13161d"/>
+
+    <!-- muzzle -->
+    <ellipse cx="256" cy="374" rx="58" ry="36" fill="#333a47"/>
+    <ellipse cx="236" cy="370" rx="7" ry="9" fill="#12151b"/>
+    <ellipse cx="276" cy="370" rx="7" ry="9" fill="#12151b"/>
+  </g>
+
+  <rect x="24.5" y="24.5" width="463" height="463" rx="107.5" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+</svg>

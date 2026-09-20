@@ -1,9 +1,7 @@
 name: Release
 
-# Build the Horizon desktop app for macOS and Windows and attach the installers
-# to a GitHub Release. Windows cannot be cross-compiled from macOS, so both are
-# built here on their native runners. Trigger by pushing a tag like v0.1.0, or
-# run manually from the Actions tab.
+# Build the Horizon menu bar app and attach it to a GitHub Release.
+# macOS only: Horizon is a native Swift/SwiftUI app.
 on:
   push:
     tags:
@@ -12,56 +10,33 @@ on:
 
 jobs:
   build:
+    runs-on: macos-15
     permissions:
       contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: macos-latest
-            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
-            args: "--target universal-apple-darwin --bundles app,dmg"
-          - platform: windows-latest
-            rust_targets: ""
-            args: "--bundles nsis,msi"
-    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build and bundle
+        run: |
+          chmod +x scripts/bundle.sh
+          ./scripts/bundle.sh
+
+      - name: Zip the app
+        run: |
+          cd build
+          ditto -c -k --sequesterRsrc --keepParent Horizon.app Horizon-macOS.zip
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
         with:
-          node-version: 20
+          files: build/Horizon-macOS.zip
+          name: Horizon ${{ github.ref_name }}
+          body: |
+            Horizon, a menu bar balance forecaster for Investec.
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.rust_targets }}
-
-      - name: Cache cargo
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build and release
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "Horizon ${{ github.ref_name }}"
-          releaseBody: |
-            Horizon, a tiny glass menu-bar balance forecaster for Investec.
-
-            Downloads:
-            - macOS: the `.dmg` (universal, Apple Silicon + Intel)
-            - Windows: the `.msi` or the NSIS `-setup.exe`
-
-            Builds are unsigned; on first launch you may need to allow the app
-            in Gatekeeper (macOS) or SmartScreen (Windows).
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.args }}
+            Download `Horizon-macOS.zip`, unzip it and drag Horizon.app to
+            Applications. The build is unsigned, so on first launch right click
+            the app and choose Open to get past Gatekeeper.

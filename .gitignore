@@ -1,21 +1,10 @@
-node_modules
-dist
-dist-ssr
-*.local
-.env
-.env.*
-!.env.example
+# Swift / SwiftPM
+.build/
+.swiftpm/
+*.xcodeproj
 
-# Tauri
-src-tauri/target
+# Built app bundle
+build/
 
 # macOS
 .DS_Store
-
-# Build artifacts
-*.tsbuildinfo
-vite.config.js
-vite.config.d.ts
-
-# Local editor/dev config
-.claude/

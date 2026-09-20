@@ -74,3 +74,29 @@ have to re-learn them.
    Not used here (Horizon is read-only), but if you extend it with the
    programmable card: the beforeTransaction hook has ~2 seconds and approves the
    spend itself if you are slow. Never put a bank call on that path.
+
+9. SwiftUI MenuBarExtra collapses around a ScrollView
+   With .menuBarExtraStyle(.window) the popover sizes itself to its content.
+   A ScrollView has no intrinsic height, so a root ScrollView makes the whole
+   panel open as a 2px sliver. Give it an explicit .frame(height:) and it
+   behaves. The onboarding screen worked first try only because it is a plain
+   VStack.
+
+10. A hand drawn zebra does not read as a zebra
+   Three ellipses with stripes punched out looks like a blob at any size. The
+   mark that works is real artwork (Resources/zebra-glyph.svg) rendered to a
+   PNG and shipped in the bundle. For the menu bar, keep it in colour: a
+   tinted template silhouette loses the stripes and the stripes are the whole
+   point.
+
+11. Native beats a webview for a menu bar app
+   The Tauri version needed a proxy (no CORS, secret must stay off the client)
+   and still drew a rectangle behind the rounded card, because the web app was
+   painting its own fake desktop. The Swift version gets the system popover
+   chrome for free and talks to Investec directly, with the keys in the
+   Keychain instead of a dev server.
+
+12. Seeding the Keychain for a demo
+   security add-generic-password -s life.floati.horizon -a investec-credentials
+   -w '<json>' -U lets the app auto connect on launch without clicking through
+   onboarding. Handy for screenshots.
