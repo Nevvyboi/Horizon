@@ -1,0 +1,58 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Horizon">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#3b4160"/>
+      <stop offset="45%" stop-color="#1e2233"/>
+      <stop offset="100%" stop-color="#0d0f16"/>
+    </linearGradient>
+    <radialGradient id="bloom" cx="50%" cy="52%" r="58%">
+      <stop offset="0%" stop-color="#7d7dff" stop-opacity="0.60"/>
+      <stop offset="42%" stop-color="#5b5bf6" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#5b5bf6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arc" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4f4bea"/>
+      <stop offset="50%" stop-color="#8f8fff"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <radialGradient id="cap" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="34%" stop-color="#b9b9ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#5b5bf6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="32%" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="62%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9a9aff" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#5b5bf6" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#9a9aff" stop-opacity="0.8"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect x="24" y="24" width="464" height="464" rx="108"/>
+    </clipPath>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#tile)"/>
+
+  <g clip-path="url(#card)">
+    <ellipse cx="256" cy="262" rx="252" ry="214" fill="url(#bloom)"/>
+
+    <!-- unfilled track -->
+    <circle cx="256" cy="262" r="140" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="44"/>
+
+    <!-- the gauge sweep, open at the lower left like the app's rings -->
+    <path d="M256 122 A140 140 0 1 1 133 330" fill="none" stroke="url(#arc)"
+          stroke-width="44" stroke-linecap="round"/>
+
+    <!-- glowing terminus -->
+    <circle cx="256" cy="122" r="46" fill="url(#cap)"/>
+    <circle cx="256" cy="122" r="21" fill="#ffffff"/>
+
+    <rect x="24" y="24" width="464" height="250" fill="url(#gloss)"/>
+  </g>
+
+  <rect x="25" y="25" width="462" height="462" rx="107" fill="none" stroke="url(#rim)" stroke-width="3"/>
+</svg>

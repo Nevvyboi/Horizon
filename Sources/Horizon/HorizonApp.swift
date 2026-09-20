@@ -13,7 +13,7 @@ struct HorizonApp: App {
                 .environmentObject(state)
         } label: {
             HStack(spacing: 4) {
-                Image(nsImage: ZebraAsset.menuBar(size: 17))
+                Image(nsImage: GaugeMark.menuBarImage(size: 15))
                 Text(state.menuBarTitle)
             }
         }

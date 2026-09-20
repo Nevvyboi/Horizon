@@ -42,7 +42,7 @@ struct QuickView: View {
                 // Header
                 HStack {
                     HStack(spacing: 6) {
-                        ZebraMark(size: 15, color: accent)
+                        GaugeMark(size: 15, color: accent)
                         Text("Horizon").font(.system(size: 12, weight: .semibold))
                     }
                     Spacer()

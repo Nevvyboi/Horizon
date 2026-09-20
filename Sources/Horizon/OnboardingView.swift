@@ -19,7 +19,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             switch step {
             case .welcome:
-                ZebraMark(size: 34, color: accent)
+                GaugeMark(size: 30, color: accent)
                     .padding(.bottom, 12)
                 Text("HORIZON")
                     .font(.system(size: 10, weight: .bold))
