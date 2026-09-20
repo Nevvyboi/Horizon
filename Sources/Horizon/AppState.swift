@@ -7,6 +7,10 @@ final class AppState: ObservableObject {
     @Published var connected = false
     @Published var loading = false
     @Published var errorMessage: String?
+    /// Plain language things to check, shown under the error.
+    @Published var errorHints: [String] = []
+    /// Whether to offer the IP allowlist alongside the error.
+    @Published var errorMightBeIP = false
 
     @Published var account: Account?
     @Published var balance: Balance?
@@ -42,7 +46,7 @@ final class AppState: ObservableObject {
 
     func connect(with creds: Credentials, persist: Bool = true, allowFallback: Bool = true) async {
         loading = true
-        errorMessage = nil
+        clearError()
         let client = InvestecClient(credentials: creds)
         do {
             let accounts = try await client.accounts()
@@ -75,9 +79,25 @@ final class AppState: ObservableObject {
                 await connect(with: alternative, persist: persist, allowFallback: false)
                 return
             }
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            report(error)
         }
         loading = false
+    }
+
+    /// Turn a thrown error into something the onboarding screen can explain.
+    private func report(_ error: Error) {
+        let client = error as? InvestecClient.ClientError
+        errorMessage = client?.errorDescription
+            ?? (error as? LocalizedError)?.errorDescription
+            ?? error.localizedDescription
+        errorHints = client?.hints ?? []
+        errorMightBeIP = client?.mightBeIPAllowlist ?? false
+    }
+
+    func clearError() {
+        errorMessage = nil
+        errorHints = []
+        errorMightBeIP = false
     }
 
     func refresh() async {
@@ -91,9 +111,9 @@ final class AppState: ObservableObject {
             self.transactions = RecurringDetector.annotate(rawTx, today: today)
             rebuildForecast()
             self.lastUpdated = Date()
-            self.errorMessage = nil
+            clearError()
         } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            report(error)
         }
         loading = false
     }

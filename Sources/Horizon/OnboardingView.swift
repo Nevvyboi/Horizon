@@ -164,7 +164,7 @@ struct OnboardingView: View {
 
             case .keys:
                 HStack(spacing: 4) {
-                    Button { step = .choose; state.errorMessage = nil } label: {
+                    Button { step = .choose; state.clearError() } label: {
                         Image(systemName: "chevron.left").font(.system(size: 10, weight: .semibold))
                         Text("Back").font(.system(size: 11))
                     }
@@ -301,13 +301,81 @@ struct OnboardingView: View {
         .buttonStyle(.plain)
     }
 
+    /// Explains what went wrong and what to check, rather than dumping a code.
     private func errorBox(_ message: String) -> some View {
-        Text(message)
-            .font(.system(size: 11))
-            .foregroundStyle(Palette.moneyOut)
-            .padding(9)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Palette.moneyOut.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-            .padding(.top, 10)
+        let accent = state.settings.accent.color
+        return VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .top, spacing: 7) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Palette.moneyOut)
+                Text(message)
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(Palette.moneyOut)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if !state.errorHints.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(state.errorHints, id: \.self) { hint in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text("•").font(.system(size: 10)).foregroundStyle(.tertiary)
+                            Text(hint)
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+
+            // When it smells like the allowlist, put the address right here.
+            if state.errorMightBeIP {
+                Divider().padding(.vertical, 1)
+                HStack(spacing: 7) {
+                    Image(systemName: "network").font(.system(size: 11)).foregroundStyle(accent)
+                    if let ip = publicIP {
+                        Text(ip).font(.system(size: 11.5, weight: .semibold, design: .monospaced))
+                    } else {
+                        Text(lookingUpIP ? "Looking up your IP..." : "Your IP")
+                            .font(.system(size: 11)).foregroundStyle(.tertiary)
+                    }
+                    Spacer(minLength: 4)
+                    if let ip = publicIP {
+                        Button {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(ip, forType: .string)
+                            copied = true
+                        } label: {
+                            Text(copied ? "Copied" : "Copy")
+                                .font(.system(size: 10, weight: .semibold))
+                                .padding(.horizontal, 7).padding(.vertical, 2)
+                                .background(accent.opacity(0.18), in: Capsule())
+                                .foregroundStyle(accent)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                Button {
+                    state.clearError()
+                    step = .lockdown
+                    lookUpIP()
+                } label: {
+                    Text("How to allowlist this address")
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .foregroundStyle(accent)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.moneyOut.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 9)
+                .stroke(Palette.moneyOut.opacity(0.25), lineWidth: 1)
+        )
+        .padding(.top, 10)
+        .onAppear { if state.errorMightBeIP { lookUpIP() } }
     }
 }
