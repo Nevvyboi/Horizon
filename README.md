@@ -303,5 +303,3 @@ Sources/Horizon/
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
-
-<div align="center"><sub>Built for the Investec Q3 2026 "Future You" bounty.</sub></div>
