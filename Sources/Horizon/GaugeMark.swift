@@ -22,12 +22,20 @@ struct GaugeMark: View {
         .frame(width: size, height: size)
     }
 
-    /// A template image for the menu bar, which cannot host arbitrary views.
-    @MainActor
+    /// A template image for the menu bar.
+    ///
+    /// Drawn with AppKit rather than ImageRenderer: a template uses only the
+    /// alpha channel, and the renderer hands back an opaque canvas, which the
+    /// menu bar then paints as a solid block instead of a ring.
     static func menuBarImage(size: CGFloat = 15) -> NSImage {
-        let renderer = ImageRenderer(content: GaugeMark(size: size, color: .black))
-        renderer.scale = 3
-        guard let image = renderer.nsImage else { return NSImage() }
+        let image = NSImage(size: NSSize(width: size, height: size), flipped: false) { rect in
+            let line = max(1.7, size * 0.17)
+            let ring = NSBezierPath(ovalIn: rect.insetBy(dx: line / 2 + 0.5, dy: line / 2 + 0.5))
+            ring.lineWidth = line
+            NSColor.black.setStroke()
+            ring.stroke()
+            return true
+        }
         image.isTemplate = true
         return image
     }
