@@ -70,9 +70,19 @@ struct Account: Identifiable, Equatable {
 }
 
 struct Balance: Equatable {
+    /// What you actually have. Negative when you are into a credit facility.
     var current: Double
+    /// What you can still spend, which on a credit account includes borrowed
+    /// headroom rather than your own money.
     var available: Double
     var currency: String
+
+    /// The size of the credit facility, inferred from the gap between what you
+    /// can spend and what you actually hold.
+    var facility: Double { max(0, available - current) }
+    var usingCredit: Bool { current < 0 }
+    /// The real bottom: spending past this exceeds the facility.
+    var floor: Double { -facility }
 }
 
 enum EventKind: Equatable {

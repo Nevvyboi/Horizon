@@ -248,7 +248,7 @@ actor InvestecClient {
             return Transaction(
                 id: "inv-\(index)",
                 date: date,
-                describedAs: t.description.trimmingCharacters(in: .whitespaces),
+                describedAs: t.description.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " "),
                 amount: amount,
                 category: Categoriser.categorise(t.description, direction: isCredit ? .money_in : .money_out),
                 isPending: (t.status ?? "").uppercased() == "PENDING",

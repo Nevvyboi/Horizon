@@ -187,3 +187,43 @@ struct EventRow: View {
         .padding(.vertical, 5)
     }
 }
+
+/// A transaction that already happened.
+struct TransactionRow: View {
+    let transaction: Transaction
+    let today: Date
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: transaction.category.symbol)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(width: 26, height: 26)
+                .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 7))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(transaction.describedAs.capitalized)
+                    .font(.system(size: 12.5, weight: .medium))
+                    .lineLimit(1)
+                HStack(spacing: 5) {
+                    Text(Dates.relative(transaction.date, today: today))
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                    if transaction.isPending {
+                        Text("PENDING")
+                            .font(.system(size: 8, weight: .semibold))
+                            .padding(.horizontal, 5).padding(.vertical, 1.5)
+                            .background(Color.primary.opacity(0.08), in: Capsule())
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            Spacer(minLength: 6)
+            Text(Money.signed(transaction.amount))
+                .font(.system(size: 12.5, weight: .semibold))
+                .monospacedDigit()
+                .foregroundStyle(transaction.amount >= 0 ? Palette.moneyIn : Palette.moneyOut)
+        }
+        .padding(.vertical, 5)
+    }
+}

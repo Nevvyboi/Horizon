@@ -23,12 +23,15 @@ enum Money {
 
     /// R33 607
     static func short(_ amount: Double) -> String {
-        "R" + (whole.string(from: NSNumber(value: amount.rounded())) ?? "0")
+        let value = amount.rounded()
+        let sign = value < 0 ? "-" : ""
+        return sign + "R" + (whole.string(from: NSNumber(value: abs(value))) ?? "0")
     }
 
     /// R199.00
     static func exact(_ amount: Double) -> String {
-        "R" + (cents.string(from: NSNumber(value: amount)) ?? "0.00")
+        let sign = amount < 0 ? "-" : ""
+        return sign + "R" + (cents.string(from: NSNumber(value: abs(amount))) ?? "0.00")
     }
 
     /// +R32 000 or -R8 500

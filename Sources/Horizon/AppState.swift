@@ -152,9 +152,21 @@ final class AppState: ObservableObject {
         )
     }
 
+    /// Most recent transactions that have actually happened, newest first.
+    /// The feed can carry forward-dated postings, which do not belong in a
+    /// list called "latest".
+    func recentTransactions(limit: Int = 5) -> [Transaction] {
+        transactions
+            .filter { Day.between(today, $0.date) <= 0 }
+            .sorted { $0.date > $1.date }
+            .prefix(limit)
+            .map { $0 }
+    }
+
     var glance: GlanceStats? {
         guard let forecast else { return nil }
-        return ForecastEngine.glance(forecast, transactions: transactions, today: today)
+        return ForecastEngine.glance(forecast, transactions: transactions, today: today,
+                                     floor: balance?.floor ?? 0)
     }
 
     // MARK: - Auto refresh
@@ -174,6 +186,6 @@ final class AppState: ObservableObject {
     /// Short text for the menu bar, e.g. "R33 607".
     var menuBarTitle: String {
         guard settings.showBalanceInMenuBar, let balance else { return "Horizon" }
-        return Money.short(balance.available)
+        return Money.short(balance.current)
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Screen {
-    case quick, future, settings, activity
+    case quick, future, settings
 }
 
 struct RootView: View {
@@ -17,7 +17,6 @@ struct RootView: View {
                 case .quick:    QuickView(screen: $screen)
                 case .future:   FutureView(screen: $screen)
                 case .settings: SettingsView(screen: $screen)
-                case .activity: ActivityView(screen: $screen)
                 }
             }
         }
@@ -32,6 +31,7 @@ struct QuickView: View {
     @EnvironmentObject var state: AppState
     @Binding var screen: Screen
     @State private var monthView = true
+    @State private var showCalendar = false
 
     var body: some View {
         let accent = state.settings.accent.color
@@ -46,13 +46,6 @@ struct QuickView: View {
                         Text("Horizon").font(.system(size: 12, weight: .semibold))
                     }
                     Spacer()
-                    Button { screen = .activity } label: {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .help("Activity")
                     Button { Task { await state.refresh() } } label: {
                         if state.loading {
                             ProgressView().controlSize(.mini).scaleEffect(0.6)
@@ -75,11 +68,14 @@ struct QuickView: View {
 
                 if let forecast = state.forecast, let glance = state.glance {
 
-                    // Balance
-                    SectionLabel(text: "Available balance")
+                    // Balance. On a credit account this is what you actually
+                    // hold, which can be negative, not the borrowed headroom.
+                    let bal = state.balance
+                    SectionLabel(text: (bal?.facility ?? 0) > 0 ? "Your balance" : "Available balance")
                     Text(Money.short(forecast.startBalance))
                         .font(.system(size: 38, weight: .semibold, design: .rounded))
                         .monospacedDigit()
+                        .foregroundStyle(forecast.startBalance < 0 ? Palette.moneyOut : .primary)
                         .padding(.top, 4)
                     HStack(spacing: 6) {
                         Circle()
@@ -90,6 +86,21 @@ struct QuickView: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding(.top, 2)
+
+                    if let bal, bal.facility > 0 {
+                        HStack(spacing: 6) {
+                            Image(systemName: "creditcard")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                            Text(bal.usingCredit
+                                 ? "\(Money.short(abs(bal.current))) into a \(Money.short(bal.facility)) facility, \(Money.short(bal.available)) left"
+                                 : "\(Money.short(bal.facility)) credit facility unused, \(Money.short(bal.available)) spendable")
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 6)
+                    }
 
                     // Gauges
                     HStack(spacing: 6) {
@@ -120,15 +131,7 @@ struct QuickView: View {
                     // This month
                     card {
                         HStack {
-                            Button { screen = .activity } label: {
-                                HStack(spacing: 4) {
-                                    SectionLabel(text: "This month")
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 7, weight: .semibold))
-                                        .foregroundStyle(.tertiary)
-                                }
-                            }
-                            .buttonStyle(.plain)
+                            SectionLabel(text: "This month")
                             Spacer()
                             Picker("", selection: $monthView) {
                                 Text("Month").tag(true)
@@ -205,15 +208,66 @@ struct QuickView: View {
                     }
                     .padding(.top, 10)
 
-                    // Coming up
-                    SectionLabel(text: "Coming up")
-                        .padding(.top, 16)
+                    // Latest transactions, what already happened
+                    HStack {
+                        SectionLabel(text: "Latest transactions")
+                        Spacer()
+                        Button { showCalendar.toggle() } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "calendar").font(.system(size: 10))
+                                Text(showCalendar ? "Hide calendar" : "Calendar")
+                                    .font(.system(size: 10.5, weight: .medium))
+                            }
+                            .foregroundStyle(showCalendar ? accent : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.top, 16)
+
                     VStack(spacing: 0) {
-                        ForEach(forecast.upcoming(limit: 4)) { event in
-                            EventRow(event: event, today: state.today, accent: accent)
+                        ForEach(state.recentTransactions(limit: 5)) { tx in
+                            TransactionRow(transaction: tx, today: state.today)
+                        }
+                        if state.transactions.isEmpty {
+                            Text("No transactions yet.")
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(.tertiary)
+                                .padding(.vertical, 8)
                         }
                     }
                     .padding(.top, 4)
+
+                    // Calendar, inline rather than a separate screen
+                    if showCalendar {
+                        ActivityCalendar(accent: accent)
+                            .padding(.top, 10)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+
+                    // Coming up, now a button through to the full list
+                    Button { screen = .future } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.up.forward.circle")
+                                .font(.system(size: 13))
+                                .foregroundStyle(accent)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("Coming up").font(.system(size: 12.5, weight: .semibold))
+                                Text(comingUpSummary(forecast))
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.tertiary)
+                                    .lineLimit(1)
+                            }
+                            Spacer(minLength: 4)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 9)
+                        .padding(.horizontal, 11)
+                        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 11))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 14)
 
                 } else if state.loading {
                     loadingBlock
@@ -241,6 +295,13 @@ struct QuickView: View {
         }
         .scrollIndicators(.never)
         .frame(height: 520)
+        .animation(.easeInOut(duration: 0.2), value: showCalendar)
+    }
+
+    private func comingUpSummary(_ f: Forecast) -> String {
+        guard let next = f.upcoming(limit: 1).first else { return "Nothing scheduled" }
+        let when = Dates.relative(next.date, today: state.today).lowercased()
+        return "\(next.label), \(Money.signed(next.amount)) \(when)"
     }
 
     private var loadingBlock: some View {

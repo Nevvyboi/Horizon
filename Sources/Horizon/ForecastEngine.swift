@@ -262,9 +262,9 @@ enum ForecastEngine {
         }
 
         var points: [ForecastPoint] = [
-            ForecastPoint(date: today, dayOffset: 0, balance: balance.available, events: [])
+            ForecastPoint(date: today, dayOffset: 0, balance: balance.current, events: [])
         ]
-        var running = balance.available
+        var running = balance.current
         for d in 1...max(1, horizonDays) {
             let dayEvents = byDay[d] ?? []
             running += dayEvents.reduce(0) { $0 + $1.amount }
@@ -277,7 +277,7 @@ enum ForecastEngine {
         }
 
         let lowestPoint = points.min { $0.balance < $1.balance } ?? points[0]
-        let projected = points.last?.balance ?? balance.available
+        let projected = points.last?.balance ?? balance.current
 
         let income = events.filter { $0.amount > 0 }.reduce(0) { $0 + $1.amount }
         let recurringOut = events.filter { $0.amount < 0 && $0.kind == .recurring }.reduce(0) { $0 + $1.amount }
@@ -285,9 +285,12 @@ enum ForecastEngine {
 
         let monthlyCommitments = list.filter { $0.direction == .money_out }
             .reduce(0) { $0 + $1.typicalAmount }
-        let threshold = monthlyCommitments > 0 ? monthlyCommitments : balance.available * 0.3
-        let outlook: Outlook = lowestPoint.balance > threshold ? .comfortable
-            : lowestPoint.balance > threshold * 0.25 ? .tight : .low
+        let threshold = monthlyCommitments > 0 ? monthlyCommitments : max(1, balance.available * 0.3)
+        let outlook: Outlook =
+            lowestPoint.balance <= balance.floor ? .low          // would exceed the facility
+            : lowestPoint.balance < 0 ? .tight                   // dipping into credit
+            : lowestPoint.balance > threshold ? .comfortable
+            : .tight
 
         var assumptions = [
             "\(list.count) recurring payments detected",
@@ -297,14 +300,14 @@ enum ForecastEngine {
         assumptions.append("Average daily spending of about \(Money.short(avgDaily))")
 
         return Forecast(
-            startBalance: balance.available,
+            startBalance: balance.current,
             horizonDays: horizonDays,
             points: points,
             lowest: (lowestPoint.date, lowestPoint.balance, lowestPoint.dayOffset),
             projected: projected,
             outlook: outlook,
             breakdown: ForecastBreakdown(
-                startBalance: balance.available,
+                startBalance: balance.current,
                 expectedIncome: income,
                 recurringPayments: recurringOut,
                 typicalSpending: spendOut,
@@ -316,7 +319,7 @@ enum ForecastEngine {
     }
 
     /// The at-a-glance numbers behind the ring gauges.
-    static func glance(_ forecast: Forecast, transactions: [Transaction], today: Date) -> GlanceStats {
+    static func glance(_ forecast: Forecast, transactions: [Transaction], today: Date, floor: Double = 0) -> GlanceStats {
         let nextIncome = forecast.upcoming(limit: 20).first { $0.direction == .money_in }
         let days = nextIncome.map { max(0, Day.between(today, $0.date)) }
         let cycle = 30.0
@@ -329,8 +332,8 @@ enum ForecastEngine {
         let recurringMonthly = abs(forecast.breakdown.recurringPayments)
         let typicalMonthly = forecast.averageDailySpend * 30 + recurringMonthly
         let spentFraction = typicalMonthly > 0 ? min(1, spent / typicalMonthly) : 0
-        let buffer = forecast.startBalance > 0
-            ? min(1, max(0, forecast.lowest.balance / forecast.startBalance)) : 0
+        let room = max(1, forecast.startBalance - floor)
+        let buffer = min(1, max(0, (forecast.lowest.balance - floor) / room))
 
         return GlanceStats(
             daysToPayday: days,
