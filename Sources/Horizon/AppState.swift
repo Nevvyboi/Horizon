@@ -243,8 +243,16 @@ final class AppState: ObservableObject {
     }
 
     /// Short text for the menu bar, e.g. "R33 607".
+    ///
+    /// Locking wins over showing the balance. Putting Touch ID in front of
+    /// the window while the same number sits in the menu bar protects
+    /// nothing, and hiding it only while locked would just flash it every
+    /// time the window opened. So if locking is on, the menu bar stays quiet.
     var menuBarTitle: String {
-        guard settings.showBalanceInMenuBar, let balance else { return "Horizon" }
+        guard settings.showBalanceInMenuBar,
+              !settings.requireUnlock,
+              let balance
+        else { return "Horizon" }
         return Money.short(balance.settled)
     }
 }

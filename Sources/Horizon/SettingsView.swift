@@ -92,7 +92,9 @@ struct SettingsView: View {
                 settingRow(
                     icon: "menubar.rectangle",
                     title: "Show balance in menu bar",
-                    detail: state.settings.showBalanceInMenuBar ? "On" : "Off"
+                    detail: state.settings.requireUnlock
+                        ? "Hidden while locking is on"
+                        : (state.settings.showBalanceInMenuBar ? "On" : "Off")
                 ) {
                     Toggle("", isOn: Binding(
                         get: { state.settings.showBalanceInMenuBar },
@@ -101,7 +103,9 @@ struct SettingsView: View {
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.mini)
+                    .disabled(state.settings.requireUnlock)
                 }
+                .opacity(state.settings.requireUnlock ? 0.5 : 1)
 
                 settingRow(
                     icon: "power",
@@ -144,7 +148,7 @@ struct SettingsView: View {
                 }
 
                 if state.settings.requireUnlock {
-                    Text("The menu bar opens on a single click, so anyone passing an unlocked laptop can read your balance. With this on, Horizon asks who you are every time the window closes and opens again.\(state.settings.showBalanceInMenuBar ? " Your balance is still printed in the menu bar itself, which you can turn off above." : "")")
+                    Text("The menu bar opens on a single click, so anyone passing an unlocked laptop can read your balance. With this on, Horizon asks who you are every time the window closes and opens again, and keeps the balance out of the menu bar too, since guarding the window while printing the number above it would protect nothing.")
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
