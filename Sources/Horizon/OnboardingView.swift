@@ -1,13 +1,17 @@
 import SwiftUI
+import AppKit
 
 struct OnboardingView: View {
     @EnvironmentObject var state: AppState
-    private enum Step { case welcome, choose, keys }
+    private enum Step { case welcome, choose, lockdown, keys }
     @State private var step: Step = .welcome
 
     @State private var clientId = ""
     @State private var secret = ""
     @State private var apiKey = ""
+    @State private var publicIP: String?
+    @State private var lookingUpIP = false
+    @State private var copied = false
 
     var body: some View {
         let accent = state.settings.accent.color
@@ -52,7 +56,7 @@ struct OnboardingView: View {
                     title: "Your Investec account",
                     detail: "Attach your own programmable banking API key.",
                     accent: accent
-                ) { step = .keys }
+                ) { step = .lockdown; lookUpIP() }
 
                 choiceRow(
                     icon: "shield.lefthalf.filled",
@@ -66,6 +70,97 @@ struct OnboardingView: View {
                 if let error = state.errorMessage {
                     errorBox(error)
                 }
+
+            case .lockdown:
+                HStack(spacing: 4) {
+                    Button { step = .choose } label: {
+                        Image(systemName: "chevron.left").font(.system(size: 10, weight: .semibold))
+                        Text("Back").font(.system(size: 11))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 10)
+
+                Text("LOCK IT TO THIS DEVICE")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1.5)
+                    .foregroundStyle(accent)
+                Text("Restrict the key to your IP")
+                    .font(.system(size: 18, weight: .semibold))
+                    .padding(.top, 4)
+                Text("Investec can limit an API key to specific IP addresses. Add the address below when you create the key, and it stops working from anywhere else, even if the key leaks.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 6)
+
+                // The address to paste
+                HStack(spacing: 8) {
+                    Image(systemName: "network")
+                        .font(.system(size: 12))
+                        .foregroundStyle(accent)
+                    Group {
+                        if lookingUpIP {
+                            Text("Looking up...").foregroundStyle(.tertiary)
+                        } else if let ip = publicIP {
+                            Text(ip).font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        } else {
+                            Text("Could not determine").foregroundStyle(.tertiary)
+                        }
+                    }
+                    .font(.system(size: 13))
+                    Spacer(minLength: 4)
+                    if let ip = publicIP {
+                        Button {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(ip, forType: .string)
+                            copied = true
+                        } label: {
+                            Text(copied ? "Copied" : "Copy")
+                                .font(.system(size: 10.5, weight: .semibold))
+                                .padding(.horizontal, 8).padding(.vertical, 3)
+                                .background(accent.opacity(0.18), in: Capsule())
+                                .foregroundStyle(accent)
+                        }
+                        .buttonStyle(.plain)
+                    } else if !lookingUpIP {
+                        Button { lookUpIP() } label: {
+                            Text("Retry")
+                                .font(.system(size: 10.5, weight: .semibold))
+                                .foregroundStyle(accent)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(10)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9))
+                .padding(.top, 10)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    stepLine("1", "Investec Online, then Manage, then Investec Developer.")
+                    stepLine("2", "Open Individual Connections and create or edit your API key.")
+                    stepLine("3", "Add the address above to the key's allowed IP addresses.")
+                }
+                .padding(.top, 12)
+
+                Text("Heads up: if your network changes, a new office, mobile hotspot, or your ISP reassigning the address, update the allowlist or the key will be refused.")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 10)
+
+                primaryButton("I have set this up", accent: accent) { step = .keys }
+                    .padding(.top, 12)
+
+                Button { step = .keys } label: {
+                    Text("Skip for now")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, alignment: .center)
 
             case .keys:
                 HStack(spacing: 4) {
@@ -123,6 +218,32 @@ struct OnboardingView: View {
     }
 
     // MARK: - Pieces
+
+    private func lookUpIP() {
+        guard publicIP == nil, !lookingUpIP else { return }
+        lookingUpIP = true
+        copied = false
+        Task {
+            let found = await PublicIP.fetch()
+            await MainActor.run {
+                publicIP = found
+                lookingUpIP = false
+            }
+        }
+    }
+
+    private func stepLine(_ number: String, _ text: String) -> some View {
+        HStack(alignment: .top, spacing: 7) {
+            Text(number)
+                .font(.system(size: 9, weight: .bold))
+                .frame(width: 14, height: 14)
+                .background(Color.primary.opacity(0.08), in: Circle())
+            Text(text)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
 
     private func field(_ label: String, text: Binding<String>, secure: Bool) -> some View {
         VStack(alignment: .leading, spacing: 4) {
